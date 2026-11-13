@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import glob
 
 # 한글 폰트 깨짐 방지
 plt.rcParams['font.family'] = 'sans-serif'
@@ -12,32 +11,31 @@ st.set_page_config(page_title="태양광 발전량 예측 프로젝트", page_ic
 st.title("☀️ 전국 태양광 발전량 예측 및 분석")
 st.write("태양광 발전량 데이터와 요인들을 분석하는 데이터 과학 웹 어플리케이션입니다.")
 
+# 깃허브 Raw 파일 주소에서 직접 데이터를 읽어옵니다
 @st.cache_data
 def load_data():
-    # 깃허브 폴더 안의 CSV 파일을 자동으로 찾습니다
-    csv_files = glob.glob('*.csv')
-    if not csv_files:
-        return None, None
-    filename = csv_files[0]
-    
+    url = "https://raw.githubusercontent.com/kkddww22kdw/project/refs/heads/main/sun.csv"
     try:
-        df = pd.read_csv(filename, encoding='utf-8')
+        df = pd.read_csv(url, encoding='utf-8')
     except UnicodeDecodeError:
-        df = pd.read_csv(filename, encoding='euc-kr')
-    return df, filename
+        df = pd.read_csv(url, encoding='euc-kr')
+    return df
 
 try:
-    df, filename = load_data()
+    df = load_data()
     
     if df is not None:
-        st.success(f"📂 연결된 데이터 파일: `{filename}`")
+        st.success("📂 깃허브(sun.csv) 데이터 로드 성공!")
         
+        # 1. 데이터셋 확인
         st.subheader("1. 📊 수집된 데이터셋 확인")
         st.dataframe(df.head())
         
+        # 2. 기술 통계
         st.subheader("2. 📈 데이터 기술 통계 (describe)")
         st.write(df.describe())
         
+        # 3. 시각화
         st.subheader("3. 📉 데이터 시각화 및 분석")
         numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
         
@@ -55,8 +53,5 @@ try:
         else:
             st.line_chart(df)
             
-    else:
-        st.error("깃허브 저장소에 CSV 데이터 파일이 없습니다. 태양광 데이터 파일을 업로드해 주세요!")
-
 except Exception as e:
     st.error(f"데이터를 불러오는 중 오류가 발생했습니다.\n\n에러 내용: {e}")
